@@ -10,11 +10,14 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
+import com.google.gson.Gson
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
+import com.kyc.project1.Models.BookedTickets
 import com.kyc.project1.R
 import com.kyc.project1.databinding.ActivityTicketConfirmationBinding
 
@@ -62,6 +65,32 @@ class TicketConfirmationActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
+
+        val ticket = BookedTickets(
+            filmPoster ?: "",
+            filmTitle ?: "",
+            selectedDate ?: "",
+            selectedTime ?: "",
+            selectedSeats ?: "",
+            numberOfTickets,
+            totalPrice
+        )
+        saveTicketToPrefs(ticket)
+
+        saveBookedSeats(filmTitle!!, selectedDate!!, selectedTime!!, selectedSeats!!)
+
+    }
+
+    private fun saveTicketToPrefs(ticket: BookedTickets) {
+        val prefs = getSharedPreferences("booked_tickets", MODE_PRIVATE)
+        val ticketListJson = prefs.getString("tickets", "[]")
+        val gson = Gson()
+        val type = object : TypeToken<MutableList<BookedTickets>>() {}.type
+        val ticketList: MutableList<BookedTickets> = gson.fromJson(ticketListJson, type)
+
+        ticketList.add(ticket)
+
+        prefs.edit().putString("tickets", gson.toJson(ticketList)).apply()
     }
 
     private fun generateQRCode(text: String): Bitmap? {
@@ -84,4 +113,23 @@ class TicketConfirmationActivity : AppCompatActivity() {
         }
         return null
     }
+
+    private fun saveBookedSeats(
+        movieTitle: String,
+        date: String,
+        time: String,
+        seats: String
+    ) {
+        val sharedPreferences = getSharedPreferences("BookedSeats", MODE_PRIVATE)
+        val key = "booked_seats_${movieTitle}_${date}_${time}"
+        val editor = sharedPreferences.edit()
+
+        val existingSet = sharedPreferences.getStringSet(key, mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+        val selectedSeatList = seats.split(",").map { it.trim() }
+
+        existingSet.addAll(selectedSeatList)
+        editor.putStringSet(key, existingSet)
+        editor.apply()
+    }
+
 }

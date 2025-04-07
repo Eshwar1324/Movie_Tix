@@ -48,6 +48,11 @@ class SeatingActivity : AppCompatActivity() {
         )
     }
 
+    private fun tryInitSeatsList() {
+        if (!selectedDate.isNullOrEmpty() && !selectedTime.isNullOrEmpty()) {
+            initSeatsList()
+        }
+    }
 
     private fun initSeatsList() {
         val gridLayoutManager = GridLayoutManager(this, 7)
@@ -66,10 +71,16 @@ class SeatingActivity : AppCompatActivity() {
         for (row in 'A'..'K') {
             for (col in 1..seatsPerRow) {
                 val seatName = "$row$col"
-                val SeatStatus = when (seatCounter) {
-                    3, 21, 34, 42, 51, 73, 74 -> Seat.SeatStatus.UNAVAILABLE
-                    else -> Seat.SeatStatus.AVAILABLE
+                val sharedPreferences = getSharedPreferences("BookedSeats", MODE_PRIVATE)
+                val key = "booked_seats_${film.Title}_${selectedDate}_${selectedTime}"
+                val bookedSeats = sharedPreferences.getStringSet(key, setOf()) ?: setOf()
+
+                val SeatStatus = if (bookedSeats.contains(seatName)) {
+                    Seat.SeatStatus.UNAVAILABLE
+                } else {
+                    Seat.SeatStatus.AVAILABLE
                 }
+
                 seatList.add(Seat(SeatStatus, seatName))
                 seatCounter++
             }
@@ -101,6 +112,7 @@ class SeatingActivity : AppCompatActivity() {
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         val dateAdapter = DateAdapter(generateDates()) { selectedDateItem ->
             selectedDate = selectedDateItem
+            tryInitSeatsList()
         }
         binding.dateRecyclerview.adapter = dateAdapter
     }
@@ -110,6 +122,7 @@ class SeatingActivity : AppCompatActivity() {
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         val timeAdapter = TimeAdapter(generateTimeSlots()) { selectedTimeSlot ->
             selectedTime = selectedTimeSlot
+            tryInitSeatsList()
         }
         binding.timeRecyclerview.adapter = timeAdapter
     }

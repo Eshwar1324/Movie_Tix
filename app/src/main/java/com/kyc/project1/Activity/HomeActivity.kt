@@ -19,6 +19,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.gson.Gson
 import com.ismaeldivita.chipnavigation.ChipNavigationBar
 import com.kyc.project1.Adapter.FilmListAdapter
 import com.kyc.project1.Adapter.SliderAdapter
@@ -28,7 +29,7 @@ import com.kyc.project1.R
 import com.kyc.project1.databinding.ActivityHomeBinding
 
 
-class HomeActivity : AppCompatActivity() {
+class HomeActivity : AppCompatActivity(), FilmListAdapter.OnItemClickListener {
 
     private lateinit var binding: ActivityHomeBinding
     private lateinit var database: FirebaseDatabase
@@ -64,6 +65,16 @@ class HomeActivity : AppCompatActivity() {
         initTopMovie()
         initUpcoming()
         initBottomNavigation()
+    }
+
+    override fun onItemClick(film: Film) {
+        navigateToFilmActivity(film)
+    }
+
+    private fun navigateToFilmActivity(film: Film) {
+        val intent = Intent(this, FilmActivity::class.java)
+        intent.putExtra("film", Gson().toJson(film))
+        startActivity(intent)
     }
 
     private fun setupUsernameListener() {
@@ -138,7 +149,7 @@ class HomeActivity : AppCompatActivity() {
                             LinearLayoutManager.HORIZONTAL,
                             false
                         )
-                        binding.recyclerViewTopmovies.adapter = FilmListAdapter(items)
+                        binding.recyclerViewTopmovies.adapter = FilmListAdapter(items,this)
                     }
                     binding.progressBar2Topmovies.visibility = View.GONE
                 }
@@ -168,7 +179,7 @@ class HomeActivity : AppCompatActivity() {
                             LinearLayoutManager.HORIZONTAL,
                             false
                         )
-                        binding.recyclerViewupcomingmovies.adapter = FilmListAdapter(items)
+                        binding.recyclerViewupcomingmovies.adapter = FilmListAdapter(items,this)
                     }
                     binding.progressBarupcomingmovies.visibility = View.GONE
                 }
@@ -240,6 +251,5 @@ class HomeActivity : AppCompatActivity() {
 
         val bottomNav = findViewById<ChipNavigationBar>(R.id.bottom_nav)
         bottomNav.setItemSelected(R.id.explorer, true)
-
     }
 }

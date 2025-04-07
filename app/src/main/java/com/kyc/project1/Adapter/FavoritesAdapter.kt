@@ -12,7 +12,15 @@ import com.kyc.project1.Activity.FavoritesActivity
 import com.kyc.project1.Models.Film
 import com.kyc.project1.R
 
-class FavoritesAdapter(private val films: MutableList<Film>, private val activity: FavoritesActivity) : RecyclerView.Adapter<FavoritesAdapter.ViewHolder>() {
+class FavoritesAdapter(private val films: MutableList<Film>,
+                       private val activity: FavoritesActivity,
+                        private val itemClickListener: OnItemClickListener
+) : RecyclerView.Adapter<FavoritesAdapter.ViewHolder>() {
+
+    interface OnItemClickListener {
+        fun onItemClick(film: Film)
+    }
+
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val FilmImage: ImageView = itemView.findViewById(R.id.filmImage)
         val titleText: TextView = itemView.findViewById(R.id.filmTitle)
@@ -37,6 +45,9 @@ class FavoritesAdapter(private val films: MutableList<Film>, private val activit
                     Toast.makeText(itemView.context, "${film.Title} removed from favorites", Toast.LENGTH_SHORT).show()
                     notifyItemRemoved(indexToRemove)
                 }
+            }
+            itemView.setOnClickListener {
+                itemClickListener.onItemClick(film)
             }
         }
     }

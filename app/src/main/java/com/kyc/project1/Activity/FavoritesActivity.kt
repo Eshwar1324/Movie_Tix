@@ -1,5 +1,6 @@
 package com.kyc.project1.Activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
@@ -9,12 +10,13 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
+import com.ismaeldivita.chipnavigation.ChipNavigationBar
 import com.kyc.project1.Adapter.FavoritesAdapter
 import com.kyc.project1.Models.Film
 import com.kyc.project1.R
 import com.kyc.project1.databinding.ActivityFavoritesBinding
 
-class FavoritesActivity : AppCompatActivity() {
+class FavoritesActivity : AppCompatActivity(), FavoritesAdapter.OnItemClickListener {
 
     private lateinit var binding: ActivityFavoritesBinding
     private lateinit var favoritesAdapter: FavoritesAdapter
@@ -35,12 +37,23 @@ class FavoritesActivity : AppCompatActivity() {
 
     }
 
-     fun removeItemFromFavorites(film: Film){
+    override fun onItemClick(film: Film) {
+        val intent = Intent(this, FilmActivity::class.java)
+        intent.putExtra("film", Gson().toJson(film))
+        startActivity(intent)
+    }
+
+    fun removeItemFromFavorites(film: Film) {
         val sharedPreferences = getSharedPreferences("favorites", MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.remove(film.Title)
         editor.apply()
-        favoriteFilms.remove(film)
+        val indexToRemove = favoriteFilms.indexOfFirst { it.Title == film.Title }
+        if (indexToRemove != -1) {
+            favoriteFilms.removeAt(indexToRemove)
+            favoritesAdapter.notifyItemRemoved(indexToRemove)
+            setupRecyclerView()
+        }
     }
 
     private fun retrieveFavorites(){
@@ -61,7 +74,7 @@ class FavoritesActivity : AppCompatActivity() {
         } else {
             binding.favContainer.visibility = View.VISIBLE
             binding.emptyFavoritesText.visibility = View.GONE
-            favoritesAdapter = FavoritesAdapter(favoriteFilms, this)
+            favoritesAdapter = FavoritesAdapter(favoriteFilms, this,this)
             binding.favContainer.layoutManager = LinearLayoutManager(this)
             binding.favContainer.adapter = favoritesAdapter
         }

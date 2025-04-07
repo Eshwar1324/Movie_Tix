@@ -9,11 +9,20 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
+import com.google.firebase.database.ValueEventListener
+import com.google.gson.Gson
 import com.kyc.project1.Activity.FilmActivity
 import com.kyc.project1.Models.Film
 import com.kyc.project1.databinding.ViewholderFilmBinding
 
-class FilmListAdapter(private val items:ArrayList<Film>):RecyclerView.Adapter<FilmListAdapter.ViewHolder>() {
+class FilmListAdapter(private val items:ArrayList<Film>,
+                      private val listener: ValueEventListener
+    ):RecyclerView.Adapter<FilmListAdapter.ViewHolder>() {
+
+    interface OnItemClickListener {
+        fun onItemClick(film: Film)
+    }
+
     private var context: Context?=null
 
     inner class ViewHolder(val binding: ViewholderFilmBinding):RecyclerView.ViewHolder(binding.root) {
@@ -25,7 +34,7 @@ class FilmListAdapter(private val items:ArrayList<Film>):RecyclerView.Adapter<Fi
 
             binding.root.setOnClickListener{
                 val intent = Intent(context,FilmActivity::class.java)
-                intent.putExtra("object",film)
+                intent.putExtra("film", Gson().toJson(film))
                 context!!.startActivity(intent)
             }
         }
