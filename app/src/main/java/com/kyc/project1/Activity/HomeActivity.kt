@@ -3,6 +3,7 @@ package com.kyc.project1.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.View
 import android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
 import androidx.activity.enableEdgeToEdge
@@ -32,6 +33,8 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
     private lateinit var database: FirebaseDatabase
     private lateinit var auth: FirebaseAuth
+    private var userListener: ValueEventListener? = null
+    private var userRef: DatabaseReference? = null
     private val sliderHandler = Handler()
     private val sliderRunnable = Runnable {
         binding.viewPager2.currentItem = binding.viewPager2.currentItem + 1
@@ -56,10 +59,40 @@ class HomeActivity : AppCompatActivity() {
             FLAG_LAYOUT_NO_LIMITS
         )
 
+        setupUsernameListener()
         initBanner()
         initTopMovie()
         initUpcoming()
         initBottomNavigation()
+    }
+
+    private fun setupUsernameListener() {
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            val userId = currentUser.uid
+            userRef = database.reference.child("users").child(userId).child("username")
+
+            userListener = object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val username = snapshot.getValue(String::class.java)
+                    binding.UsernameTxt.text = username ?: "Guest"
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("Firebase", "Error listening for username changes: ${error.message}")
+                }
+            }
+            userRef?.addValueEventListener(userListener!!)
+        } else {
+            binding.UsernameTxt.text = "Guest"
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        userRef?.removeEventListener(userListener!!)
+        userListener = null
+        userRef = null
     }
 
     private fun initBottomNavigation(){
