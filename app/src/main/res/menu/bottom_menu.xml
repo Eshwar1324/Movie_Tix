@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/explorer"
+        android:icon="@drawable/btn_1"
+        android:title="@string/explorer"
+        app:cnb_backgroundColor="@color/Buttons"
+        app:cnb_iconColor="@color/white"
+        />
+
+    <item android:id="@+id/favorites"
+        android:icon="@drawable/btn_2"
+        android:title="@string/favorite"
+        app:cnb_backgroundColor="@color/Buttons"
+        app:cnb_iconColor="@color/white"
+        />
+
+    <item android:id="@+id/tickets"
+        android:icon="@drawable/icon_tckt"
+        android:title="@string/tickets"
+        app:cnb_backgroundColor="@color/Buttons"
+        app:cnb_iconColor="@color/white"
+        />
+
+    <item android:id="@+id/profile"
+        android:icon="@drawable/btn_4"
+        android:title="@string/profile"
+        app:cnb_backgroundColor="@color/Buttons"
+        app:cnb_iconColor="@color/white"
+        />
+</menu>
