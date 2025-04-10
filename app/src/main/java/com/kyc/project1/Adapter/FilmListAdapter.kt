@@ -16,7 +16,7 @@ import com.kyc.project1.Models.Film
 import com.kyc.project1.databinding.ViewholderFilmBinding
 
 class FilmListAdapter(private val items:ArrayList<Film>,
-                      private val listener: ValueEventListener
+                      private val listener: OnItemClickListener
     ):RecyclerView.Adapter<FilmListAdapter.ViewHolder>() {
 
     interface OnItemClickListener {
@@ -33,9 +33,7 @@ class FilmListAdapter(private val items:ArrayList<Film>,
             Glide.with(context!!).load(film.Poster).apply(requestOptions).into(binding.pic)
 
             binding.root.setOnClickListener{
-                val intent = Intent(context,FilmActivity::class.java)
-                intent.putExtra("film", Gson().toJson(film))
-                context!!.startActivity(intent)
+                listener.onItemClick(film)
             }
         }
     }

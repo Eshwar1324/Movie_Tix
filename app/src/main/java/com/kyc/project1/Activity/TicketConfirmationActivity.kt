@@ -69,11 +69,12 @@ class TicketConfirmationActivity : AppCompatActivity() {
         val ticket = BookedTickets(
             filmPoster ?: "",
             filmTitle ?: "",
+            filmDuration ?: "",
             selectedDate ?: "",
             selectedTime ?: "",
             selectedSeats ?: "",
             numberOfTickets,
-            totalPrice
+            totalPrice,
         )
         saveTicketToPrefs(ticket)
 

@@ -60,7 +60,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <EditText
-                android:id="@+id/editTextText"
+                android:id="@+id/search_bar"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_margin="16dp"
@@ -72,6 +72,18 @@
                 android:hint="@string/search_for_movies"
                 android:inputType="text"
                 android:padding="12dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewGenres"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal"
+                android:scrollbars="horizontal"
+                android:overScrollMode="never"
+                />
+
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"

@@ -23,6 +23,7 @@ import com.google.gson.Gson
 import com.ismaeldivita.chipnavigation.ChipNavigationBar
 import com.kyc.project1.Adapter.FilmListAdapter
 import com.kyc.project1.Adapter.SliderAdapter
+import com.kyc.project1.Adapter.GenreAdapter
 import com.kyc.project1.Models.Film
 import com.kyc.project1.Models.SliderItems
 import com.kyc.project1.R
@@ -34,6 +35,9 @@ class HomeActivity : AppCompatActivity(), FilmListAdapter.OnItemClickListener {
     private lateinit var binding: ActivityHomeBinding
     private lateinit var database: FirebaseDatabase
     private lateinit var auth: FirebaseAuth
+    private var allMovies: List<Film> = emptyList()
+    private var allUpcomingMovies: List<Film> = emptyList()
+    private lateinit var genreAdapter: GenreAdapter
     private var userListener: ValueEventListener? = null
     private var userRef: DatabaseReference? = null
     private val sliderHandler = Handler()
@@ -65,10 +69,14 @@ class HomeActivity : AppCompatActivity(), FilmListAdapter.OnItemClickListener {
         initTopMovie()
         initUpcoming()
         initBottomNavigation()
+
     }
 
+
     override fun onItemClick(film: Film) {
-        navigateToFilmActivity(film)
+        val intent = Intent(this, FilmActivity::class.java)
+        intent.putExtra("film", Gson().toJson(film))
+        startActivity(intent)
     }
 
     private fun navigateToFilmActivity(film: Film) {
@@ -104,6 +112,7 @@ class HomeActivity : AppCompatActivity(), FilmListAdapter.OnItemClickListener {
         userRef?.removeEventListener(userListener!!)
         userListener = null
         userRef = null
+        binding.searchBar.setText("")
     }
 
     private fun initBottomNavigation(){
@@ -132,6 +141,8 @@ class HomeActivity : AppCompatActivity(), FilmListAdapter.OnItemClickListener {
         }
     }
 
+
+
     private fun initTopMovie() {
         val myRef: DatabaseReference = database.getReference("Items")
         binding.progressBar2Topmovies.visibility = View.VISIBLE
@@ -141,26 +152,70 @@ class HomeActivity : AppCompatActivity(), FilmListAdapter.OnItemClickListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     for (issue in snapshot.children) {
-                        items.add(issue.getValue(Film::class.java)!!)
+                        val film = issue.getValue(Film::class.java)
+                        if (film != null) {
+                            items.add(film)
+                        }
                     }
+
+                    allMovies = items
+                    setupGenreFilter(items)
+
                     if (items.isNotEmpty()) {
                         binding.recyclerViewTopmovies.layoutManager = LinearLayoutManager(
                             this@HomeActivity,
                             LinearLayoutManager.HORIZONTAL,
                             false
                         )
-                        binding.recyclerViewTopmovies.adapter = FilmListAdapter(items,this)
+                        binding.recyclerViewTopmovies.adapter = FilmListAdapter(items, this@HomeActivity)
                     }
+
                     binding.progressBar2Topmovies.visibility = View.GONE
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+                Log.e("Firebase", "Failed to load movies: ${error.message}")
             }
-
         })
     }
+
+    private fun setupGenreFilter(movies: List<Film>) {
+        val genres = mutableSetOf<String>()
+        for (movie in movies) {
+            genres.addAll(movie.Genre)
+        }
+
+        val genreList = mutableListOf<String>()
+        genreList.add("All")
+        genreList.addAll(genres.sorted())
+
+        genreAdapter = GenreAdapter(genreList) { selectedGenre ->
+            filterMoviesByGenre(selectedGenre)
+        }
+
+        binding.recyclerViewGenres.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.recyclerViewGenres.adapter = genreAdapter
+    }
+
+    private fun filterMoviesByGenre(genre: String) {
+        val filteredTopMovies = if (genre == "All") {
+            allMovies
+        } else {
+            allMovies.filter { it.Genre.contains(genre) }
+        }
+        binding.recyclerViewTopmovies.adapter = FilmListAdapter(ArrayList(filteredTopMovies), this@HomeActivity)
+
+        val filteredUpcoming = if (genre == "All") {
+            allUpcomingMovies
+        } else {
+            allUpcomingMovies.filter { it.Genre.contains(genre) }
+        }
+        binding.recyclerViewupcomingmovies.adapter = FilmListAdapter(ArrayList(filteredUpcoming), this@HomeActivity)
+    }
+
+
 
     private fun initUpcoming() {
         val myRef: DatabaseReference = database.getReference("Upcomming")
@@ -171,22 +226,27 @@ class HomeActivity : AppCompatActivity(), FilmListAdapter.OnItemClickListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     for (issue in snapshot.children) {
-                        items.add(issue.getValue(Film::class.java)!!)
+                        val film = issue.getValue(Film::class.java)
+                        if (film != null) {
+                            items.add(film)
+                        }
                     }
+                    allUpcomingMovies = items
+
                     if (items.isNotEmpty()) {
                         binding.recyclerViewupcomingmovies.layoutManager = LinearLayoutManager(
                             this@HomeActivity,
                             LinearLayoutManager.HORIZONTAL,
                             false
                         )
-                        binding.recyclerViewupcomingmovies.adapter = FilmListAdapter(items,this)
+                        binding.recyclerViewupcomingmovies.adapter = FilmListAdapter(items,this@HomeActivity)
                     }
                     binding.progressBarupcomingmovies.visibility = View.GONE
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+                Log.e("Firebase", "Failed to load upcoming movies: ${error.message}")
             }
 
         })

@@ -134,7 +134,7 @@ class SeatingActivity : AppCompatActivity() {
 
         binding.BookTicketBtn.setOnClickListener {
             if (number > 0 && selectedDate != null && selectedTime != null && selectedSeats != null) {
-                val intent = Intent(this, TicketConfirmationActivity::class.java)
+                val intent = Intent(this, PaymentActivity::class.java)
                 intent.putExtra("filmPoster", film.Poster)
                 intent.putExtra("filmTitle", film.Title)
                 intent.putExtra("filmDuration", film.Time)
